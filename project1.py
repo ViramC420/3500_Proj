@@ -58,7 +58,9 @@ print_csv_contents(file_path)
 def load_data(file_path):
     # START TIMING 
     start_time = time.time()
-
+    
+    print("\nLoading input data set:")
+    print("************************")
     print(f"{datetime.now()} Starting Script")
     print(f"{datetime.now()} Loading {file_path}")
 
@@ -121,9 +123,9 @@ def main():
             df, load_time = load_data(file_path)
             total_time += load_time
         elif choice == '2' and df is not None:
-            # [PH]
+            clean_data(df) # [PH]
         elif choice == '3' and df is not None:
-            # [PH]
+            print_answers(df) # [PH]
         elif choice in ['4', '5', '6'] and df is not None:
             search_accidents(df, choice)
         elif choice == '7':
