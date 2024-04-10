@@ -1,3 +1,13 @@
+# Course: cmps3500
+# CLASS PROJECT 
+# PYTHON IMPLEMENTATION: BASIC DATA ANALYSIS 
+# Date: 4.9.24 
+# Student 1: Justin Alejo 
+# Student 2: Karla Medrano   
+# Student 3: Christian Viramontes 
+# Student 4: Delaney Welch  
+# Description: Implementation Basic Data Analysis Routines 
+
 import pandas as pd
 
 file_path = 'US_Accidents_data.csv'
@@ -32,5 +42,91 @@ def print_csv_contents(file_path):
 
 
 print_csv_contents(file_path)
+
+
+# What would happen I get a file that is corrupted?
+# What if 2 of the columns don't have the same number of rows?
+# What if the programs takes too much to long to process the data set?
+# What if you divide by zero?
+# What if there is an error in one of the formulas?
+
+#print statement sections 
+#needs to be updated to py prints 
+# Menu drop down 
+1 = "Load data \n" 
+2 = "Process data \n"
+3 = "Print Answers \n"
+4 = "Search Accidents (Use City, State, and Zip Code)\n"
+5 = "Search Accidents (Year, Month and Day) \n"
+6 = "Search Accidents (Temperature Range and Visibility Range) \n"
+7 = "Quit \n"
+
+
+if 1 
+"Loading and cleaning input data set: \n"
+"*********************************** \n"
+[cur time] "Starting Script \n"
+[cur time] "Loading US_Acidents.csv \n"
+[cur time] "Total Columns Read: [ans] \n"
+[cur time] "Total Rows Read: [ans] \n\n"
+"Time to load is: " [ans] " \n"
+
+
+If 2
+"Processing input data set: \n"
+"************************** \n"
+[cur time] " Performing Data Clean Up \n"
+[cur time] " Total Rows Read after cleaning is: " [ans] "\n"
+
+"Time to process is: " [ans] "\n"
+
+
+If 3
+"Answering questions: \n"
+"******************** \n"
+[cur time] " In what month were there more accidents reported? \n" 
+[cur time] [ans] "\n"
+[cur time] " What was the longest accident (in hours) recorded in Florida in the Spring (March, April, and May) of 2020? \n"
+[curtime] [ans] "\n"
+
+
+If 4
+"Search Accidents: \n"
+"***************** \n"
+"Enter a State name: " <User Input> "\n"
+"Enter a City name: " <User Input> "\n"
+"Enter a ZIP Code: " <User Input> "\n"
+"There where " <User Input> " accidents. \n"
+"Time to perform search is: " [ans] "\n" 
+
+
+If 5
+"Search Accidents: \n"
+"***************** \n"
+"Enter a Year: "<User Input> "\n"
+"Enter a Month name: "<User Input> "\n"
+"Enter a Day: "<User Input> "\n"
+"There where "<User Input> "accidents. \n"
+"Time to perform search is: " [ans] "\n"
+
+
+If 6
+"Search Accidents: \n"
+"***************** \n"
+"Enter a Minimum Temperature (F): " <User Input> "\n"
+"Enter a Maximum Temperature (F): " <User Input> "\n"
+"Enter a Minimum Visibility (mi): " <User Input> "\n"
+"Enter a Maximum Visibility (mi): " <User Input> \n"
+"There where " <User Input> " accidents. \n"
+"Time to perform search is: " [ans] "\n"
+
+
+If 7
+"Total Running Time (In Minutes): " [ans] "\n"
+
+
+
+
+
 
 
