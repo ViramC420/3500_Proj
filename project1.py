@@ -53,9 +53,8 @@ print_csv_contents(file_path)
 # What if you divide by zero?
 # What if there is an error in one of the formulas?
 
-#print statement sections 
-#needs to be updated to py prints 
 
+# READ DATA INTO DF
 def load_data(file_path):
     # START TIMING 
     start_time = time.time()
@@ -76,6 +75,28 @@ def load_data(file_path):
 
     # RETURN DATAFRAME AND TIME TAKEN
     return df, load_time
+
+
+# SEARCH CAPACITY
+def search_accidents(df, choice):
+    if choice == '4':
+        state = input("Enter a State name: ")
+        city = input("Enter a City name: ")
+        zipcode = input("Enter a ZIP Code: ")
+        # [PH]
+
+    elif choice == '5':
+        year = input("Enter a Year: ")
+        month = input("Enter a Month name: ")
+        day = input("Enter a Day: ")
+        # [PH]
+
+    elif choice == '6':
+        min_temp = input("Enter a Minimum Temperature (F): ")
+        max_temp = input("Enter a Maximum Temperature (F): ")
+        min_vis = input("Enter a Minimum Visibility (mi): ")
+        max_vis = input("Enter a Maximum Visibility (mi): ")
+        # [PH]
 
 
 # MAIN MENU DROP-DOWN
@@ -99,6 +120,12 @@ def main():
         if choice == '1':
             df, load_time = load_data(file_path)
             total_time += load_time
+        elif choice == '2' and df is not None:
+            # [PH]
+        elif choice == '3' and df is not None:
+            # [PH]
+        elif choice in ['4', '5', '6'] and df is not None:
+            search_accidents(df, choice)
         elif choice == '7':
             print(f"Total Running Time (In Minutes): {total_time / 60:.2f}")
             print("Exiting the program.")
@@ -106,11 +133,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
