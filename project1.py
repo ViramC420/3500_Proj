@@ -15,9 +15,16 @@ import time
 
 file_path = 'US_Accidents_data.csv'
 
-def print_csv_contents(file_path):
-    # Read the CSV file
-    df = pd.read_csv(file_path)
+
+#Clean_data function executes when the user enters 2 for the menu options.
+#However, this will not execute if the data has not been loaded yet. 
+def clean_data(df):
+
+    start_time = time.time()
+
+    print("\nProcessing input data set:")
+    print("************************")
+    print(f"{datetime.now()} Performing Data Clean Up")
 
     # only consider the first 5 digits of the zip code
     df['Zipcode'] = df['Zipcode'].astype(str).str.split('-').str[0]
@@ -38,13 +45,13 @@ def print_csv_contents(file_path):
     df_cleaned = df_cleaned.dropna(thresh=min_non_na)
 
     #Eliminate all rows with distance equal to zero
-    df_cleaned = df_cleaned[df_cleaned['Distance(mi)'] != 0] 
-    
-    # Print the contents of the DataFrame
-    print(df_cleaned)
+    df_cleaned = df_cleaned[df_cleaned['Distance(mi)'] != 0]
 
+    print(f"{datetime.now()} Total Rows Read after cleaning is: {len(df_cleaned)}")
 
-print_csv_contents(file_path)
+    clean_time = time.time() - start_time
+    print(f"Time to process is: {clean_time:.2f} seconds")
+    return df_cleaned, clean_time
 
 
 # What would happen I get a file that is corrupted?
@@ -123,7 +130,8 @@ def main():
             df, load_time = load_data(file_path)
             total_time += load_time
         elif choice == '2' and df is not None:
-            clean_data(df) # [PH]
+            df, load_time = clean_data(df) # [PH]
+            total_time += load_time
         elif choice == '3' and df is not None:
             print_answers(df) # [PH]
         elif choice in ['4', '5', '6'] and df is not None:
