@@ -15,6 +15,37 @@ import time
 
 file_path = 'US_Accidents_data.csv'
 
+# What would happen I get a file that is corrupted?
+# What if 2 of the columns don't have the same number of rows?
+# What if the programs takes too much to long to process the data set?
+# What if you divide by zero?
+# What if there is an error in one of the formulas?
+
+
+# READ DATA INTO DF
+def load_data(file_path):
+    # START TIMING 
+    start_time = time.time()
+    
+    print("\nLoading input data set:")
+    print("************************")
+    print(f"{datetime.now()} Starting Script")
+    print(f"{datetime.now()} Loading {file_path}")
+
+    # READ FILE
+    df = pd.read_csv(file_path)
+
+    print(f"{datetime.now()} Total Columns Read: {len(df.columns)}")
+    print(f"{datetime.now()} Total Rows Read: {len(df)}")
+
+    # CALCULATE TIME TAKEN TO LOAD DATA
+    load_time = time.time() - start_time
+
+    print(f"Time to load is: {load_time:.2f} seconds")
+
+    # RETURN DATAFRAME AND TIME TAKEN
+    return df, load_time
+
 
 #Clean_data function executes when the user enters 2 for the menu options.
 #However, this will not execute if the data has not been loaded yet. 
@@ -54,36 +85,77 @@ def clean_data(df):
     return df_cleaned, clean_time
 
 
-# What would happen I get a file that is corrupted?
-# What if 2 of the columns don't have the same number of rows?
-# What if the programs takes too much to long to process the data set?
-# What if you divide by zero?
-# What if there is an error in one of the formulas?
-
-
-# READ DATA INTO DF
-def load_data(file_path):
-    # START TIMING 
-    start_time = time.time()
-    
-    print("\nLoading input data set:")
+# ANSWERING QUESTIONS
+def print_answers(df):
+    print("\nAnswering questions:")
     print("************************")
-    print(f"{datetime.now()} Starting Script")
-    print(f"{datetime.now()} Loading {file_path}")
 
-    # READ FILE
-    df = pd.read_csv(file_path)
+    print(f"{datetime.now()} 7. What are the 3 most common weather conditions when accidents occurred in New York city?")
+    try:
+        nyc_weather = common_weather_conditions_ny(df)
+        print(f"{datetime.now()} Results:")
+        # CONVERTS DF TO STRING
+        print(nyc_weather.to_string())
+    except Exception as e:
+        print(f"Failed to calculate due to: {str(e)}")
 
-    print(f"{datetime.now()} Total Columns Read: {len(df.columns)}")
-    print(f"{datetime.now()} Total Rows Read: {len(df)}")
+    # SPACER
+    print("\n" + "-"*50 + "\n")
 
-    # CALCULATE TIME TAKEN TO LOAD DATA
-    load_time = time.time() - start_time
+    print(f"{datetime.now()} What was the maximum visibility of all accidents of severity 2 that occurred in the state of New Hampshire?")
+    try:
+        max_vis_nh = max_visibility_severity_2_nh(df)
+        print(f"{datetime.now()} Maximum visibility: {max_vis_nh} miles")
+    except Exception as e:
+        print(f"Failed to calculate due to: {str(e)}")
 
-    print(f"Time to load is: {load_time:.2f} seconds")
 
-    # RETURN DATAFRAME AND TIME TAKEN
-    return df, load_time
+##########################################
+#                                        #
+#       BEG print_answer FUNCTIONS       #
+#                                        #
+##########################################
+
+# QUESTION 7
+def common_weather_conditions_ny(df):
+    # FILTER FOR NY
+    nyc_accidents = df[df['City'] == 'New York'].copy()
+    
+    # CONVERT Start_Time
+    nyc_accidents['Start_Time'] = pd.to_datetime(nyc_accidents['Start_Time'])
+    nyc_accidents['Month'] = nyc_accidents['Start_Time'].dt.month
+
+    # GROUP BY MONTH AND WEATHER CONDITION
+    grouped = nyc_accidents.groupby(['Month', 'Weather_Condition']).size().reset_index(name='Count')
+    
+    # SORT
+    top_conditions_by_month = grouped.sort_values(['Month', 'Count'], ascending=[True, False])
+    
+    # GET TOP 3 CONDITIONS
+    top_conditions_by_month = top_conditions_by_month.groupby('Month').head(3)
+    
+    # RETURN IN READABLE FORMAT
+    return top_conditions_by_month.pivot(index='Month', columns='Weather_Condition', values='Count')
+
+# QUESTION 8
+def max_visibility_severity_2_nh(df):
+    # FILTER FOR NH + VIS 2
+    nh_severity_2 = df[(df['State'] == 'NH') & (df['Severity'] == 2)].copy()
+    
+    # CONVERT TO NUMERIC + ERROR HANDLING
+    nh_severity_2.loc[:, 'Visibility(mi)'] = pd.to_numeric(nh_severity_2['Visibility(mi)'], errors='coerce')
+    
+    # FIND MAX VISIBILITY
+    max_visibility = nh_severity_2['Visibility(mi)'].max()
+    
+    # RETURN VIS FOUND
+    return max_visibility
+
+##########################################
+#                                        #
+#       END print_answer FUNCTIONS       #
+#                                        #
+##########################################
 
 
 # SEARCH CAPACITY
@@ -133,7 +205,7 @@ def main():
             df, load_time = clean_data(df) # [PH]
             total_time += load_time
         elif choice == '3' and df is not None:
-            print_answers(df) # [PH]
+            print_answers(df)
         elif choice in ['4', '5', '6'] and df is not None:
             search_accidents(df, choice)
         elif choice == '7':
