@@ -46,7 +46,7 @@ def load_data(file_path):
     # RETURN DATAFRAME AND TIME TAKEN
     return df, load_time
 
-
+#//IMPLEMENTED BY JUSTIN
 #Clean_data function executes when the user enters 2 for the menu options.
 #However, this will not execute if the data has not been loaded yet. 
 def clean_data(df):
@@ -90,6 +90,26 @@ def print_answers(df):
     print("\nAnswering questions:")
     print("************************")
 
+    print(f"{datetime.now()} 1. What are the 3 months with the highest amount of accidents reported?")
+    try:
+        top_months = top_three_accident_months(df)
+        print(top_months)
+    except Exception as e:
+        print(f"Failed to calculate due to: {str(e)}")
+
+    # SPACER
+    print("\n" + "-"*50 + "\n")
+
+    print(f"{datetime.now()}2. What is the year with the highest amount of accidents reported?")
+    try:
+        max_accidents_year, max_accidents_count = year_with_most_accidents(df)
+        print(f"Year: {max_accidents_year}, Accident count: {max_accidents_count}")
+    except Exception as e:
+        print(f"Failed to calculate due to: {str(e)}")
+
+    # SPACER
+    print("\n" + "-"*50 + "\n")
+
     print(f"{datetime.now()} 7. What are the 3 most common weather conditions when accidents occurred in New York city?")
     try:
         nyc_weather = common_weather_conditions_ny(df)
@@ -115,6 +135,41 @@ def print_answers(df):
 #       BEG print_answer FUNCTIONS       #
 #                                        #
 ##########################################
+
+# QUESTION 1 // IMPLEMENTED BY JUSTIN
+def top_three_accident_months(df):
+
+    #Convert Start_Time to datetime
+    df['Start_Time'] = pd.to_datetime(df['Start_Time'])
+
+    #Extract year and month from Start_Time
+    df['Year_Month'] = df['Start_Time'].dt.to_period('M')
+
+    #Group by the new Year_Month column and count the number of accidents
+    monthly_accidents = df.groupby('Year_Month').size()
+
+    #Sort the counts in descending 
+    top_months = monthly_accidents.sort_values(ascending=False).head(3)
+
+    return top_months
+
+# QUESTION 2 //IMPLEMENTED BY JUSTIN
+def year_with_most_accidents(df):
+
+    #Convert Start_Time to datetime
+    df['Start_Time'] = pd.to_datetime(df['Start_Time'])
+
+    #Extract the year from 'Start_Time'
+    df['Year'] = df['Start_Time'].dt.year
+
+    #Group by the 'Year' column, find yr with most accidnets
+    accident_counts = df['Year'].value_counts()
+    max_accidents_year = accident_counts.idxmax()
+
+    #return the number of accidents in that year
+    max_accidents_count = accident_counts.max()
+
+    return max_accidents_year, max_accidents_count
 
 # QUESTION 7
 def common_weather_conditions_ny(df):
