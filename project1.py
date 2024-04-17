@@ -118,6 +118,15 @@ def print_answers(df):
     except Exception as e:
         print(f"Failed to calculate due to: {str(e)}")
 
+    # SPACER
+    print("\n" + "-"*50 + "\n")
+
+    print(f"{datetime.now()} 4. What severity is the most common in Virginia, California and Florida")
+    try:
+        most_common_severity = most_common_severity_in_states(df)
+        print(most_common_severity)
+    except Exception as e:
+        print(f"Failed to calculate due to: {str(e)}")
 
     # SPACER
     print("\n" + "-"*50 + "\n")
@@ -193,7 +202,7 @@ def state_with_most_severity_2_accidents(df):
     # Filter the DataFrame for only accidents with Severity 2
     severity_2_df = df[df['Severity'] == 2]
     
-    # Group the data by State and Year, then count the number of accidents
+    # Group the data by State and Year
     grouped = severity_2_df.groupby(['State', 'Year']).size()
     
     # Reset the index to make 'State' and 'Year' columns again
@@ -203,14 +212,31 @@ def state_with_most_severity_2_accidents(df):
     # First sort by Year and then by Count in descending order to get the state with most accidents on top for each year
     grouped = grouped.sort_values(by=['Year', 'Count'], ascending=[True, False])
     
-    # Drop duplicate years, keeping the first entry which has the max count due to sorting
+    # Drop duplicate years
     result = grouped.drop_duplicates(subset='Year', keep='first').sort_values(by='Year')
 
     return result
 
 # QUESTION 4 // IMPLEMENTED BY JUSTIN
-
-
+def most_common_severity_in_states(df):
+    
+    states_of_interest = ['VA', 'CA', 'FL']
+    
+    # Filter DataFrame for Virginia, California, and Florida
+    filtered_df = df[df['State'].isin(states_of_interest)]
+    
+    # Group by State and Severity, then count the occurrences
+    grouped = filtered_df.groupby(['State', 'Severity']).size()
+    
+    grouped_df = grouped.reset_index(name='Count')
+    
+    # Sort the DataFrame by State and Count in descending order to find the most common severity for each state
+    grouped_df = grouped_df.sort_values(by=['State', 'Count'], ascending=[True, False])
+    
+    # Drop duplicates
+    most_common_severity = grouped_df.drop_duplicates(subset='State', keep='first').reset_index(drop=True)
+    
+    return most_common_severity
 
 # QUESTION 7
 def common_weather_conditions_ny(df):
