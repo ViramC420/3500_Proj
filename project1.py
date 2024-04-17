@@ -100,12 +100,24 @@ def print_answers(df):
     # SPACER
     print("\n" + "-"*50 + "\n")
 
-    print(f"{datetime.now()}2. What is the year with the highest amount of accidents reported?")
+    print(f"{datetime.now()} 2. What is the year with the highest amount of accidents reported?")
     try:
         max_accidents_year, max_accidents_count = year_with_most_accidents(df)
         print(f"Year: {max_accidents_year}, Accident count: {max_accidents_count}")
     except Exception as e:
         print(f"Failed to calculate due to: {str(e)}")
+
+
+    # SPACER
+    print("\n" + "-"*50 + "\n")
+
+    print(f"{datetime.now()} 3. What is the state that had the most accidents of severity 2?")
+    try:
+        most_severity_2_accidents = state_with_most_severity_2_accidents(df)
+        print(most_severity_2_accidents)
+    except Exception as e:
+        print(f"Failed to calculate due to: {str(e)}")
+
 
     # SPACER
     print("\n" + "-"*50 + "\n")
@@ -170,6 +182,35 @@ def year_with_most_accidents(df):
     max_accidents_count = accident_counts.max()
 
     return max_accidents_year, max_accidents_count
+
+#QUESTION 3 // IMPLEMENTED BY JUSTIN
+def state_with_most_severity_2_accidents(df):
+
+    # Properly format 'Start_Time' 'Severity'
+    df['Start_Time'] = pd.to_datetime(df['Start_Time'])
+    df['Year'] = df['Start_Time'].dt.year
+    
+    # Filter the DataFrame for only accidents with Severity 2
+    severity_2_df = df[df['Severity'] == 2]
+    
+    # Group the data by State and Year, then count the number of accidents
+    grouped = severity_2_df.groupby(['State', 'Year']).size()
+    
+    # Reset the index to make 'State' and 'Year' columns again
+    grouped = grouped.reset_index(name='Count')
+    
+    # Sort and find the state with the maximum accidents for each year
+    # First sort by Year and then by Count in descending order to get the state with most accidents on top for each year
+    grouped = grouped.sort_values(by=['Year', 'Count'], ascending=[True, False])
+    
+    # Drop duplicate years, keeping the first entry which has the max count due to sorting
+    result = grouped.drop_duplicates(subset='Year', keep='first').sort_values(by='Year')
+
+    return result
+
+# QUESTION 4 // IMPLEMENTED BY JUSTIN
+
+
 
 # QUESTION 7
 def common_weather_conditions_ny(df):
