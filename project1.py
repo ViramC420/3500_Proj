@@ -135,8 +135,8 @@ def print_answers(df):
     print(f"{datetime.now()} 5. What are the 5 cities that had the most accidents in California?")
     try:
         california_cities = top_five_cities_in_california(df)
-          print(f"{datetime.now()} Results:")
-          print(california_cities.to_string())  # Converts DataFrame to string for better readability
+        print(f"{datetime.now()} Results:")
+        print(california_cities.to_string())  # Converts DataFrame to string for better readability
     except Exception as e:
         print(f"Failed to calculate due to: {str(e)}")
 
@@ -265,7 +265,7 @@ def top_five_cities_in_california(df):
     ca_accidents = df[df['State'] == 'CA'].copy()
     ca_accidents['Year'] = pd.to_datetime(ca_accidents['Start_Time']).dt.year
     grouped = ca_accidents.groupby(['Year', 'City']).size().reset_index(name='Count')
-     top_cities_by_year = grouped.sort_values(['Year', 'Count'], ascending=[True, False])
+    top_cities_by_year = grouped.sort_values(['Year', 'Count'], ascending=[True, False])
     top_cities_by_year = top_cities_by_year.groupby('Year').head(5)
     return top_cities_by_year.pivot(index='Year', columns='City', values='Count')
 
