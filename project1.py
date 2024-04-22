@@ -26,7 +26,7 @@ file_path = 'US_Accidents_data.csv'
 def load_data(file_path):
     # START TIMING 
     start_time = time.time()
-    
+
     print("\nLoading input data set:")
     print("************************")
     print(f"{datetime.now()} Starting Script")
@@ -131,6 +131,28 @@ def print_answers(df):
     # SPACER
     print("\n" + "-"*50 + "\n")
 
+    #Question 5: The 5 cities with the most accidents in California displayed per year
+    print(f"{datetime.now()} 5. What are the 5 cities that had the most accidents in California?")
+    try:
+        california_cities = top_five_cities_in_california(df)
+          print(f"{datetime.now()} Results:")
+          print(california_cities.to_string())  # Converts DataFrame to string for better readability
+    except Exception as e:
+        print(f"Failed to calculate due to: {str(e)}")
+
+    # SPACER
+    print("\n" + "-"*50 + "\n")
+    # Question 6: Average humidity and temperature of accidents of severity 4 in Boston displayed per month
+    print(f"{datetime.now()} 6. What was the average humidity and average temperature of all accidents of severity 4 that occurred in the city of Boston?")
+    try:
+        boston_weather = avg_humidity_temperature_boston(df)
+        print(f"{datetime.now()} Results:")
+        print(boston_weather.to_string())  # Converts DataFrame to string for better readability
+    except Exception as e:
+        print(f"Failed to calculate due to: {str(e)}")
+
+    # SPACER
+    print("\n" + "-"*50 + "\n")
     print(f"{datetime.now()} 7. What are the 3 most common weather conditions when accidents occurred in New York city?")
     try:
         nyc_weather = common_weather_conditions_ny(df)
@@ -198,20 +220,20 @@ def state_with_most_severity_2_accidents(df):
     # Properly format 'Start_Time' 'Severity'
     df['Start_Time'] = pd.to_datetime(df['Start_Time'])
     df['Year'] = df['Start_Time'].dt.year
-    
+
     # Filter the DataFrame for only accidents with Severity 2
     severity_2_df = df[df['Severity'] == 2]
-    
+
     # Group the data by State and Year
     grouped = severity_2_df.groupby(['State', 'Year']).size()
-    
+
     # Reset the index to make 'State' and 'Year' columns again
     grouped = grouped.reset_index(name='Count')
-    
+
     # Sort and find the state with the maximum accidents for each year
     # First sort by Year and then by Count in descending order to get the state with most accidents on top for each year
     grouped = grouped.sort_values(by=['Year', 'Count'], ascending=[True, False])
-    
+
     # Drop duplicate years
     result = grouped.drop_duplicates(subset='Year', keep='first').sort_values(by='Year')
 
@@ -219,43 +241,58 @@ def state_with_most_severity_2_accidents(df):
 
 # QUESTION 4 // IMPLEMENTED BY JUSTIN
 def most_common_severity_in_states(df):
-    
+
     states_of_interest = ['VA', 'CA', 'FL']
-    
+
     # Filter DataFrame for Virginia, California, and Florida
     filtered_df = df[df['State'].isin(states_of_interest)]
-    
+
     # Group by State and Severity, then count the occurrences
     grouped = filtered_df.groupby(['State', 'Severity']).size()
-    
+
     grouped_df = grouped.reset_index(name='Count')
-    
+
     # Sort the DataFrame by State and Count in descending order to find the most common severity for each state
     grouped_df = grouped_df.sort_values(by=['State', 'Count'], ascending=[True, False])
-    
+
     # Drop duplicates
     most_common_severity = grouped_df.drop_duplicates(subset='State', keep='first').reset_index(drop=True)
-    
+
     return most_common_severity
+
+#QUESTION 5 // karla
+def top_five_cities_in_california(df):
+    ca_accidents = df[df['State'] == 'CA'].copy()
+    ca_accidents['Year'] = pd.to_datetime(ca_accidents['Start_Time']).dt.year
+    grouped = ca_accidents.groupby(['Year', 'City']).size().reset_index(name='Count')
+     top_cities_by_year = grouped.sort_values(['Year', 'Count'], ascending=[True, False])
+    top_cities_by_year = top_cities_by_year.groupby('Year').head(5)
+    return top_cities_by_year.pivot(index='Year', columns='City', values='Count')
+
+# Question 6 //karla
+def avg_humidity_temperature_boston(df):
+    boston_accidents = df[(df['Severity'] == 4) & (df['City'] == 'Boston')].copy()
+    boston_accidents['Month'] = pd.to_datetime(boston_accidents['Start_Time']).dt.month
+    return boston_accidents.groupby('Month').agg({'Humidity(%)': 'mean', 'Temperature(F)': 'mean'}).reset_index()
 
 # QUESTION 7
 def common_weather_conditions_ny(df):
     # FILTER FOR NY
     nyc_accidents = df[df['City'] == 'New York'].copy()
-    
+
     # CONVERT Start_Time
     nyc_accidents['Start_Time'] = pd.to_datetime(nyc_accidents['Start_Time'])
     nyc_accidents['Month'] = nyc_accidents['Start_Time'].dt.month
 
     # GROUP BY MONTH AND WEATHER CONDITION
     grouped = nyc_accidents.groupby(['Month', 'Weather_Condition']).size().reset_index(name='Count')
-    
+
     # SORT
     top_conditions_by_month = grouped.sort_values(['Month', 'Count'], ascending=[True, False])
-    
+
     # GET TOP 3 CONDITIONS
     top_conditions_by_month = top_conditions_by_month.groupby('Month').head(3)
-    
+
     # RETURN IN READABLE FORMAT
     return top_conditions_by_month.pivot(index='Month', columns='Weather_Condition', values='Count')
 
@@ -263,13 +300,13 @@ def common_weather_conditions_ny(df):
 def max_visibility_severity_2_nh(df):
     # FILTER FOR NH + VIS 2
     nh_severity_2 = df[(df['State'] == 'NH') & (df['Severity'] == 2)].copy()
-    
+
     # CONVERT TO NUMERIC + ERROR HANDLING
     nh_severity_2.loc[:, 'Visibility(mi)'] = pd.to_numeric(nh_severity_2['Visibility(mi)'], errors='coerce')
-    
+
     # FIND MAX VISIBILITY
     max_visibility = nh_severity_2['Visibility(mi)'].max()
-    
+
     # RETURN VIS FOUND
     return max_visibility
 
