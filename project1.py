@@ -338,6 +338,29 @@ def search_accidents(df, choice):
         max_vis = input("Enter a Maximum Visibility (mi): ")
         # [PH]
 
+# menu 5 and 6
+def search_accidents_by_date(year='', month='', day=''):
+    filtered_data = accidents_data
+    if year:
+        filtered_data = filtered_data[filtered_data['Start_Time'].dt.year == int(year)]
+    if month:
+        filtered_data = filtered_data[filtered_data['Start_Time'].dt.month == int(month)]
+    if day:
+        filtered_data = filtered_data[filtered_data['Start_Time'].dt.day == int(day)]
+    return len(filtered_data)
+
+def search_accidents_by_temp_vis(min_temp='', max_temp='', min_vis='', max_vis=''):
+    filtered_data = accidents_data
+    if min_temp:
+        filtered_data = filtered_data[filtered_data['Temperature(F)'] >= float(min_temp)]
+    if max_temp:
+        filtered_data = filtered_data[filtered_data['Temperature(F)'] <= float(max_temp)]
+    if min_vis:
+        filtered_data = filtered_data[filtered_data['Visibility(mi)'] >= float(min_vis)]
+    if max_vis:
+        filtered_data = filtered_data[filtered_data['Visibility(mi)'] <= float(max_vis)]
+    return len(filtered_data)
+
 
 # MAIN MENU DROP-DOWN
 def main():
@@ -372,5 +395,4 @@ def main():
             print("Exiting the program.")
             running = False
 
-if __name__ == "__main__":
-    main()
+#if __name__ == "__main__":
