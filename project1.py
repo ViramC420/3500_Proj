@@ -395,4 +395,5 @@ def main():
             print("Exiting the program.")
             running = False
 
-#if __name__ == "__main__":
+if __name__ == "__main__":
+    main()
