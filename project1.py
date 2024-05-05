@@ -27,16 +27,26 @@ def load_data(file_path):
     # START TIMING 
     start_time = time.time()
 
-    print("\nLoading input data set:")
-    print("************************")
-    print(f"{datetime.now()} Starting Script")
-    print(f"{datetime.now()} Loading {file_path}")
+    try:
+        print("\nLoading input data set:")
+        print("************************")
+        print(f"{datetime.now()} Starting Script")
+        print(f"{datetime.now()} Loading {file_path}")
 
-    # READ FILE
-    df = pd.read_csv(file_path)
+        # READ FILE INTO DATAFRAME
+        df = pd.read_csv(file_path)
 
-    print(f"{datetime.now()} Total Columns Read: {len(df.columns)}")
-    print(f"{datetime.now()} Total Rows Read: {len(df)}")
+        print(f"{datetime.now()} Total Columns Read: {len(df.columns)}")
+        print(f"{datetime.now()} Total Rows Read: {len(df)}\n")
+    except FileNotFoundError:
+        print("The specified file was not found.")
+        return None, None  
+    except pd.errors.EmptyDataError:
+        print("No data: The file is empty.")
+        return None, None
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None, None
 
     # CALCULATE TIME TAKEN TO LOAD DATA
     load_time = time.time() - start_time
@@ -309,6 +319,23 @@ def max_visibility_severity_2_nh(df):
 
     # RETURN VIS FOUND
     return max_visibility
+    
+# Question 9
+def bk(df):
+
+    df['Start_Time'] = pd.to_datetime(df['Start_Time'])
+    df['Year'] = df['Start_Time'].dt.year
+
+    filtered_df = df[df['City'] == 'Bakersfield'].copy()
+
+    group = filtered_df.groupby(['Year', 'Severity']).size()
+
+    group_df = group.reset_index(name='Count')
+
+    group_df = group_df.sort_values(by=['Year', 'Severity'], ascending=[True, False])
+    result = group_df.drop_duplicates(subset='Year', keep='first').sort_values(by='Year')
+
+    return result
 
 ##########################################
 #                                        #
@@ -320,10 +347,15 @@ def max_visibility_severity_2_nh(df):
 # SEARCH CAPACITY
 def search_accidents(df, choice):
     if choice == '4':
-        state = input("Enter a State name: ")
-        city = input("Enter a City name: ")
-        zipcode = input("Enter a ZIP Code: ")
-        # [PH]
+        start_time = time.time()
+        accident_count = search4(df)
+        end_time = time.time()
+
+        if accident_count == 0:
+            print("There were no accidents found.")
+        else:
+            print(f"There were {accident_count} accidents found.") 
+        print("Time to perform search is: ", end_time - start_time)
 
     elif choice == '5':
         year = input("Enter a Year: ")
@@ -338,6 +370,25 @@ def search_accidents(df, choice):
         max_vis = input("Enter a Maximum Visibility (mi): ")
         # [PH]
 
+# SEARCH (4) CAPACITY
+def search4(df):
+
+    state = input("Enter the state (leave blank to search all states): ").upper()
+    city = input("Enter the city (leave blank to search all cities): ").title()
+    zip_code = input("Enter the zipcode (leave blank to search all zipcodes): ")
+
+    filtered_df = df
+    if state != "":
+        filtered_df = filtered_df[filtered_df["State"] == state]
+    if city != "":
+        filterd_df = filtered_df[filtered_df["City"] == city]
+    if zip_code != "":
+        filtered_df = filtered_df[filtered_df["Zipcode"] == zip_code]
+    
+    results = len(filtered_df)
+    
+    return results
+    
 # menu 5 and 6
 def search_accidents_by_date(year='', month='', day=''):
     filtered_data = accidents_data
@@ -378,18 +429,29 @@ def main():
         print("(6) Search Accidents (Temperature Range and Visibility Range)")
         print("(7) Quit")
 
-        choice = input("Select an option: ")
+        while True:  # CONTINUOUS LOOP FOR PROMPT INPUT
+            choice = input("Select an option: ")
+            if choice in ['1', '2', '3', '4', '5', '6', '7']:
+                break  # BREAK IF VALID
+            else:
+                print("Invalid option. Please select a valid number from 1 to 7.")
 
         if choice == '1':
             df, load_time = load_data(file_path)
-            total_time += load_time
-        elif choice == '2' and df is not None:
-            df, load_time = clean_data(df) # [PH]
-            total_time += load_time
-        elif choice == '3' and df is not None:
-            print_answers(df)
-        elif choice in ['4', '5', '6'] and df is not None:
-            search_accidents(df, choice)
+            if df is not None:  
+                total_time += load_time
+        elif choice in ['2', '3', '4', '5', '6']:
+            if df is None:
+                print("\nPlease load the data first before selecting this option.")
+                time.sleep(2)  # BRIEF PAUSE
+            else:
+                if choice == '2':
+                    df, process_time = clean_data(df)
+                    total_time += process_time
+                elif choice == '3':
+                    print_answers(df)
+                elif choice in ['4', '5', '6']:
+                    search_accidents(df, choice)
         elif choice == '7':
             print(f"Total Running Time (In Minutes): {total_time / 60:.2f}")
             print("Exiting the program.")
