@@ -182,6 +182,15 @@ def print_answers(df):
     except Exception as e:
         print(f"Failed to calculate due to: {str(e)}")
 
+    # SPACER
+    print("\n" + "-"*50 + "\n")
+
+    print(f"{datetime.now()} What was the maximum visibility of all accidents of severity 2 that occurred in the state of New Hampshire?")
+    try:
+        max_vis_nh = max_visibility_severity_2_nh(df)
+        print(f"{datetime.now()} Maximum visibility: {max_vis_nh} miles")
+    except Exception as e:
+        print(f"Failed to calculate due to: {str(e)}")
 
     # SPACER 
     print("\n" + "-"*50 + "\n") 
