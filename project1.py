@@ -185,10 +185,10 @@ def print_answers(df):
     # SPACER
     print("\n" + "-"*50 + "\n")
 
-    print(f"{datetime.now()} What was the maximum visibility of all accidents of severity 2 that occurred in the state of New Hampshire?")
+    print(f"{datetime.now()} 9. How many accidents of each severity were recorded in Bakersfield?")
     try:
-        max_vis_nh = max_visibility_severity_2_nh(df)
-        print(f"{datetime.now()} Maximum visibility: {max_vis_nh} miles")
+        result = bk(df)
+        print(result)
     except Exception as e:
         print(f"Failed to calculate due to: {str(e)}")
 
