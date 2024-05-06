@@ -316,8 +316,7 @@ def bk(df):
     result = group_df.drop_duplicates(subset='Year', keep='first').sort_values(by='Year')
 
     return result
-#may not work
-# /____\
+
 # Question 10
 def ten(df):
 
@@ -336,7 +335,7 @@ def ten(df):
 
 def search4(df):
 
-    state = input("Enter the state (leave blank to search all states): ").title()
+    state = input("Enter the state (leave blank to search all states): ").upper()
     city = input("Enter the city (leave blank to search all cities): ").title()
     zip_code = input("Enter the zipcode (leave blank to search all zipcodes): ")
 
