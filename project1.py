@@ -127,6 +127,31 @@ If 7
 
 
 
+    # SPACER 
+    print("\n" + "-"*50 + "\n") 
+    print(f"{datetime.now()} 10. What was the longest accident (in hours) recorded in Las Vegas in the Spring (March, April, and May)?") 
 
+    try: 
+        max_df = ten(df) 
+        print(f"{datetime.now()} The longest accident (in hours) was:") 
+
+        # CONVERTS DF TO STRING 
+        print(max_df.to_string()) 
+    except Exception as e: 
+        print(f"Failed to calculate due to: {str(e)}")  
+
+# Question 10 
+def ten(df): 
+
+    df['Start_Time'] = pd.to_datetime(df['Start_Time']) 
+    df['Month'] = df['Start_Time'].dt.month 
+    df['Year'] = df['Start_Time'].dt.year 
+    df['Duration (min)'] = df['Start_Time'].dt.minute; 
+
+    spring_df = df[df['Month'].isin([3,4,5])] 
+    vegas_accidents = spring_df[spring_df['City'] == 'Las Vegas'].copy() 
+    max_df = vegas_accidents.groupby('Year')['Duration (min)'].max() / 60 
+
+    return max_df  
 
 
