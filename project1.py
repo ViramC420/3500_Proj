@@ -256,19 +256,14 @@ def state_with_most_severity_2_accidents(df):
     # Filter the DataFrame for only accidents with Severity 2
     severity_2_df = df[df['Severity'] == 2]
 
-    # Group the data by State and Year
-    grouped = severity_2_df.groupby(['State', 'Year']).size()
+    #Group the data by State
+    grouped = severity_2_df.groupby('State').size()
 
-    # Reset the index to make 'State' and 'Year' columns again
+    # Reset the index to make 'State' a column again and name the accident counts
     grouped = grouped.reset_index(name='Count')
 
-    # Sort and find the state with the maximum accidents for each year
-    # First sort by Year and then by Count in descending order to get the state with most accidents on top for each year
-    grouped = grouped.sort_values(by=['Year', 'Count'], ascending=[True, False])
-
-    # Drop duplicate years
-    result = grouped.drop_duplicates(subset='Year', keep='first').sort_values(by='Year')
-
+    # Sort and find the state with the max total accidents
+    result = grouped.sort_values(by='Count', ascending=False).head(1)
     return result
 
 # QUESTION 4 // IMPLEMENTED BY JUSTIN
