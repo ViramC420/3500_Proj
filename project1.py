@@ -12,8 +12,9 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 import time
+import os
 
-file_path = 'US_Accidents_data.csv'
+#file_path = 'US_Accidents_data.csv'
 
 # What would happen I get a file that is corrupted?
 # What if 2 of the columns don't have the same number of rows?
@@ -21,10 +22,31 @@ file_path = 'US_Accidents_data.csv'
 # What if you divide by zero?
 # What if there is an error in one of the formulas?
 
-
 # READ DATA INTO DF
-def load_data(file_path):
-    # START TIMING 
+def load_data():
+
+    csv_files = [file for file in os.listdir('.') if file.endswith('.csv')]
+    if not csv_files:
+        print("No CSV files found in the directory.")
+        return None, None
+    
+    print("\nAvailabe CSV files:")
+    for index, file in enumerate(csv_files):
+        print(f"{index + 1}. {file}")
+
+    try:
+        file_index = int(input("Select the file number to load: ")) - 1
+    except ValueError:
+        print("Invalid input. Please enter a number.")
+        return None, None
+    
+    if file_index >= 0 and file_index < len(csv_files):
+        file_path = csv_files[file_index]
+    else:
+        print("Invaled file selection.")
+        return None, None
+
+    #Start timing
     start_time = time.time()
 
     try:
@@ -67,32 +89,39 @@ def clean_data(df):
     print("************************")
     print(f"{datetime.now()} Performing Data Clean Up")
 
-    # only consider the first 5 digits of the zip code
-    df['Zipcode'] = df['Zipcode'].astype(str).str.split('-').str[0]
+    try:
+        # only consider the first 5 digits of the zip code
+        df['Zipcode'] = df['Zipcode'].astype(str).str.split('-').str[0]
 
-    #convert Start_time and End_time to datetime
-    #calculate the durations and filter our rows where duration is zero
-    df['Start_Time'] = pd.to_datetime(df['Start_Time'])
-    df['End_Time'] = pd.to_datetime(df['End_Time'])
-    duration = (df['End_Time'] - df['Start_Time']).dt.total_seconds() / 60
-    df = df[duration != 0]
+        #convert Start_time and End_time to datetime
+        #calculate the durations and filter our rows where duration is zero
+        df['Start_Time'] = pd.to_datetime(df['Start_Time'])
+        df['End_Time'] = pd.to_datetime(df['End_Time'])
+        duration = (df['End_Time'] - df['Start_Time']).dt.total_seconds() / 60
+        df = df[duration != 0]
 
-    # Drop the rows where data is missing from any one of these column names
-    columns_to_check = ['ID', 'Severity', 'Zipcode', 'Start_Time', 'End_Time', 'Visibility(mi)', 'Weather_Condition', 'Country']
-    df_cleaned = df.dropna(subset=columns_to_check)
+        # Drop the rows where data is missing from any one of these column names
+        columns_to_check = ['ID', 'Severity', 'Zipcode', 'Start_Time', 'End_Time', 'Visibility(mi)', 'Weather_Condition', 'Country']
+        df_cleaned = df.dropna(subset=columns_to_check)
 
-    # Drop the rows where data is missing from more than 3 columns
-    min_non_na = len(df.columns) - 2;
-    df_cleaned = df_cleaned.dropna(thresh=min_non_na)
+        # Drop the rows where data is missing from more than 3 columns
+        min_non_na = len(df.columns) - 2
+        df_cleaned = df_cleaned.dropna(thresh=min_non_na)
 
-    #Eliminate all rows with distance equal to zero
-    df_cleaned = df_cleaned[df_cleaned['Distance(mi)'] != 0]
+        #Eliminate all rows with distance equal to zero
+        df_cleaned = df_cleaned[df_cleaned['Distance(mi)'] != 0]
 
-    print(f"{datetime.now()} Total Rows Read after cleaning is: {len(df_cleaned)}")
+        print(f"{datetime.now()} Total Rows Read after cleaning is: {len(df_cleaned)}")
 
-    clean_time = time.time() - start_time
-    print(f"Time to process is: {clean_time:.2f} seconds")
-    return df_cleaned, clean_time
+        clean_time = time.time() - start_time
+        print(f"Time to process is: {clean_time:.2f} seconds")
+        return df_cleaned, clean_time
+    except KeyError as e:
+        print(f"Dataframe does not have the specified columns: {e}. Please try again.")
+        return None, 0
+    except Exception as e:
+        print(f"An unexpected error occurured: {e}")
+        return None, 0
 
 
 # ANSWERING QUESTIONS
@@ -468,7 +497,7 @@ def main():
                 print("Invalid option. Please select a valid number from 1 to 7.")
 
         if choice == '1':
-            df, load_time = load_data(file_path)
+            df, load_time = load_data()
             if df is not None:  
                 total_time += load_time
         elif choice in ['2', '3', '4', '5', '6']:
