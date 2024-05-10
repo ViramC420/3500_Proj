@@ -408,7 +408,7 @@ def search_accidents(df, choice):
 
     elif choice == '5':
         year = input("Enter a Year (leave blank to include all years): ").strip()
-        month = input("Enter a Month name or number (leave blank to include all months): ").strip().lower()
+        month = input("Enter a Month number (leave blank to include all months): ").strip().lower()
         day = input("Enter a Day (leave blank to include all days): ").strip()
 
         if year.isdigit():
