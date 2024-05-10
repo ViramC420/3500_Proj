@@ -395,35 +395,39 @@ def search_accidents(df, choice):
         zipcode = input("Enter a ZIP Code: ")
 
     elif choice == '5':
-        year = input("Enter a Year: ").strip()
-        if not year.isdigit():
-            raise ValueError("Year must be a numeric value.")
-        month = input("Enter a Month name or number: ").strip().lower()
+        year = input("Enter a Year (leave blank to include all years): ").strip()
+        month = input("Enter a Month name or number (leave blank to include all months): ").strip().lower()
+        day = input("Enter a Day (leave blank to include all days): ").strip()
+
+        if year.isdigit():
+            year = int(year)
+        else:
+            year = None  # ALLOW SEARCH ACROSS ALL YEARS
+
         if month.isdigit():
             month = int(month)
+        elif month in month_mapping:
+            month = month_mapping[month]
         else:
-            if month in month_mapping:
-                month = month_mapping[month]
-            else:
-                raise ValueError("Please enter a valid month name or number.")
-        day = input("Enter a Day: ").strip()
-        if not day.isdigit():
-            raise ValueError("Day must be a numeric value.")
-        filtered_df = df[(df['Start_Time'].dt.year == int(year)) &
-                         (df['Start_Time'].dt.month == month) &
-                         (df['Start_Time'].dt.day == int(day))]
-        print(f"There are {len(filtered_df)} accidents on {month}/{day}/{year}.")
+            month = None  # ALLOW SEARCH ACROSS ALL MONTHS
+
+        if day.isdigit():
+            day = int(day)
+        else:
+            day = None  # ALLOW SEARCH ACROSS ALL DAYS
+
+        accidents_count = search_accidents_by_date(df, year=year, month=month, day=day)
+        print(f"There are {accidents_count} accidents matching your criteria.")
+
 
     elif choice == '6':
-        min_temp = input("Enter a Minimum Temperature (F): ").strip()
-        max_temp = input("Enter a Maximum Temperature (F): ").strip()
-        min_vis = input("Enter a Minimum Visibility (mi): ").strip()
-        max_vis = input("Enter a Maximum Visibility (mi): ").strip()
-        filtered_df = df[(df['Temperature(F)'] >= float(min_temp)) &
-                         (df['Temperature(F)'] <= float(max_temp)) &
-                         (df['Visibility(mi)'] >= float(min_vis)) &
-                         (df['Visibility(mi)'] <= float(max_vis))]
-        print(f"There are {len(filtered_df)} accidents with temperature between {min_temp}F and {max_temp}F and visibility between {min_vis}mi and {max_vis}mi.")
+        min_temp = input("Enter a Minimum Temperature (F) (leave blank for no minimum): ").strip()
+        max_temp = input("Enter a Maximum Temperature (F) (leave blank for no maximum): ").strip()
+        min_vis = input("Enter a Minimum Visibility (mi) (leave blank for no minimum): ").strip()
+        max_vis = input("Enter a Maximum Visibility (mi) (leave blank for no maximum): ").strip()
+
+        accidents_count = search_accidents_by_temp_vis(df, min_temp, max_temp, min_vis, max_vis)
+        print(f"There are {accidents_count} accidents matching your temperature and visibility criteria.")
 
 
 
@@ -447,18 +451,18 @@ def search4(df):
     return results
     
 # menu 5 and 6
-def search_accidents_by_date(year='', month='', day=''):
-    filtered_data = accidents_data
-    if year:
-        filtered_data = filtered_data[filtered_data['Start_Time'].dt.year == int(year)]
-    if month:
-        filtered_data = filtered_data[filtered_data['Start_Time'].dt.month == int(month)]
-    if day:
-        filtered_data = filtered_data[filtered_data['Start_Time'].dt.day == int(day)]
+def search_accidents_by_date(df, year=None, month=None, day=None):
+    filtered_data = df
+    if year is not None:
+        filtered_data = filtered_data[filtered_data['Start_Time'].dt.year == year]
+    if month is not None:
+        filtered_data = filtered_data[filtered_data['Start_Time'].dt.month == month]
+    if day is not None:
+        filtered_data = filtered_data[filtered_data['Start_Time'].dt.day == day]
     return len(filtered_data)
 
-def search_accidents_by_temp_vis(min_temp='', max_temp='', min_vis='', max_vis=''):
-    filtered_data = accidents_data
+def search_accidents_by_temp_vis(df, min_temp='', max_temp='', min_vis='', max_vis=''):
+    filtered_data = df
     if min_temp:
         filtered_data = filtered_data[filtered_data['Temperature(F)'] >= float(min_temp)]
     if max_temp:
