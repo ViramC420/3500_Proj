@@ -385,29 +385,49 @@ def ten(df):
 
 # SEARCH CAPACITY
 def search_accidents(df, choice):
-    if choice == '4':
-        start_time = time.time()
-        accident_count = search4(df)
-        end_time = time.time()
+    month_mapping = {
+        'january': 1, 'february': 2, 'march': 3, 'april': 4,
+        'may': 5, 'june': 6, 'july': 7, 'august': 8,
+        'september': 9, 'october': 10, 'november': 11, 'december': 12
+    }
 
-        if accident_count == 0:
-            print("There were no accidents found.")
-        else:
-            print(f"There were {accident_count} accidents found.") 
-        print("Time to perform search is: ", end_time - start_time)
+    if choice == '4':
+        state = input("Enter a State name: ")
+        city = input("Enter a City name: ")
+        zipcode = input("Enter a ZIP Code: ")
 
     elif choice == '5':
-        year = input("Enter a Year: ")
-        month = input("Enter a Month name: ")
-        day = input("Enter a Day: ")
-        # [PH]
+        year = input("Enter a Year: ").strip()
+        if not year.isdigit():
+            raise ValueError("Year must be a numeric value.")
+        month = input("Enter a Month name or number: ").strip().lower()
+        if month.isdigit():
+            month = int(month)
+        else:
+            if month in month_mapping:
+                month = month_mapping[month]
+            else:
+                raise ValueError("Please enter a valid month name or number.")
+        day = input("Enter a Day: ").strip()
+        if not day.isdigit():
+            raise ValueError("Day must be a numeric value.")
+        filtered_df = df[(df['Start_Time'].dt.year == int(year)) &
+                         (df['Start_Time'].dt.month == month) &
+                         (df['Start_Time'].dt.day == int(day))]
+        print(f"There are {len(filtered_df)} accidents on {month}/{day}/{year}.")
 
     elif choice == '6':
-        min_temp = input("Enter a Minimum Temperature (F): ")
-        max_temp = input("Enter a Maximum Temperature (F): ")
-        min_vis = input("Enter a Minimum Visibility (mi): ")
-        max_vis = input("Enter a Maximum Visibility (mi): ")
-        # [PH]
+        min_temp = input("Enter a Minimum Temperature (F): ").strip()
+        max_temp = input("Enter a Maximum Temperature (F): ").strip()
+        min_vis = input("Enter a Minimum Visibility (mi): ").strip()
+        max_vis = input("Enter a Maximum Visibility (mi): ").strip()
+        filtered_df = df[(df['Temperature(F)'] >= float(min_temp)) &
+                         (df['Temperature(F)'] <= float(max_temp)) &
+                         (df['Visibility(mi)'] >= float(min_vis)) &
+                         (df['Visibility(mi)'] <= float(max_vis))]
+        print(f"There are {len(filtered_df)} accidents with temperature between {min_temp}F and {max_temp}F and visibility between {min_vis}mi and {max_vis}mi.")
+
+
 
 # SEARCH (4) CAPACITY
 def search4(df):
