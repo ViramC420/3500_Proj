@@ -306,7 +306,7 @@ def avg_humidity_temperature_boston(df):
     return boston_accidents.groupby('Month').agg({'Humidity(%)': 'mean', 'Temperature(F)': 'mean'}).reset_index()
 
 # QUESTION 7
-# What are the 3 most common weather conditions when accidents occurred in New York City?
+# What are the 3 most common weather conditions when accidents occur in New York City?
 def common_weather_conditions_ny(df):
     # FILTER FOR NY
     nyc_accidents = df[df['City'] == 'New York'].copy()
@@ -318,14 +318,12 @@ def common_weather_conditions_ny(df):
     # GROUP BY MONTH AND WEATHER CONDITION
     grouped = nyc_accidents.groupby(['Month', 'Weather_Condition']).size().reset_index(name='Count')
 
-    # SORT
+    # SORT AND GET TOP 3 CONDITIONS FOR EACH MONTH
     top_conditions_by_month = grouped.sort_values(['Month', 'Count'], ascending=[True, False])
-
-    # GET TOP 3 CONDITIONS
     top_conditions_by_month = top_conditions_by_month.groupby('Month').head(3)
 
-    # RETURN IN READABLE FORMAT
-    return top_conditions_by_month.pivot(index='Month', columns='Weather_Condition', values='Count')
+    # READABILITY
+    return top_conditions_by_month.pivot(index='Month', columns='Weather_Condition', values='Count').fillna(0)
 
 # QUESTION 8
 # What was the max visibility of all accidents of severity 2 that occurred in the state of New Hampshire?
