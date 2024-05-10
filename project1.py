@@ -290,12 +290,24 @@ def most_common_severity_in_states(df):
 #QUESTION 5 // karla
 # What are the 5 cities that had the most accidents in California?
 def top_five_cities_in_california(df):
+    # FILTERING
     ca_accidents = df[df['State'] == 'CA'].copy()
+
+    # EXTRACT YEAR AND GROUP BY YEAR AND CITY
     ca_accidents['Year'] = pd.to_datetime(ca_accidents['Start_Time']).dt.year
     grouped = ca_accidents.groupby(['Year', 'City']).size().reset_index(name='Count')
-    top_cities_by_year = grouped.sort_values(['Year', 'Count'], ascending=[True, False])
-    top_cities_by_year = top_cities_by_year.groupby('Year').head(5)
-    return top_cities_by_year.pivot(index='Year', columns='City', values='Count')
+
+    # GET TOP CITIES OVERALL
+    overall_top_cities = grouped.groupby('City')['Count'].sum().nlargest(5).index
+
+    # FILTER TO KEEP TOP 5
+    top_cities_by_year = grouped[grouped['City'].isin(overall_top_cities)]
+
+    # FOR BETTER VISIBILITY
+    result = top_cities_by_year.pivot(index='Year', columns='City', values='Count').fillna(0)
+    result.columns.name = "Top 5 Cities"
+
+    return result
 
 # Question 6 //karla
 # What is the average humidity and average temperature of all accidents of 
