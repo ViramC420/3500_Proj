@@ -395,6 +395,11 @@ def ten(df):
 
 # SEARCH CAPACITY
 def search_accidents(df, choice):
+    month_mapping = {
+        'january': 1, 'february': 2, 'march': 3, 'april': 4,
+        'may': 5, 'june': 6, 'july': 7, 'august': 8,
+        'september': 9, 'october': 10, 'november': 11, 'december': 12
+    }
     if choice == '4':
         start_time = time.time()
         accident_count = search4(df)
