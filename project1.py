@@ -417,64 +417,96 @@ def search_accidents(df, choice):
         print("Time to perform search is: ", end_time - start_time)
 
     elif choice == '5':
-        year = input("Enter a Year (leave blank to include all years): ").strip()
-        month = input("Enter a Month name or number (leave blank to include all months): ").strip().lower()
-        day = input("Enter a Day (leave blank to include all days): ").strip()
-        try:
-            # VALIDATE YEAR
-            if year:
-                year = int(year)
-                if year <= 0:
-                    raise ValueError("Input must be a positive integer.")
-            else:
-                year = None
+        while True:
+            year = input("Enter a Year (leave blank to include all years): ").strip()
+            try:
+                if year:
+                    year = int(year)
+                    if year <= 0:
+                        raise ValueError("Year must be a positive integer.")
+                    break
+                else:
+                    year = None
+                    break
+            except ValueError:
+                print("Invalid year entry. Please enter a valid positive integer or leave blank.")
 
-            # VALIDATE MONTH
-            if month.isdigit():
-                month = int(month)
-                if not 1 <= month <= 12:
-                    raise ValueError("Month must be between 1 and 12.")
-            elif month in month_mapping:
-                month = month_mapping[month]
-            elif month:
-                raise ValueError("Invalid month entry. Please enter a valid month name or number.")
-            else:
-                month = None
+        while True:
+            month = input("Enter a Month name or number (leave blank to include all months): ").strip().lower()
+            try:
+                if month.isdigit():
+                    month = int(month)
+                    if not 1 <= month <= 12:
+                        raise ValueError("Month must be between 1 and 12.")
+                    break
+                elif month in month_mapping:
+                    month = month_mapping[month]
+                    break
+                elif month == "":
+                    month = None
+                    break
+                else:
+                    raise ValueError("Invalid month entry. Please enter a valid month name or number.")
+            except ValueError:
+                print("Invalid month entry. Please enter a valid month name or number.")
 
-            # VALIDATE DAY
-            if day:
-                day = int(day)
-                if not 1 <= day <= 31:
-                    raise ValueError("Day must be between 1 and 31.")
-            else:
-                day = None
+        while True:
+            day = input("Enter a Day (leave blank to include all days): ").strip()
+            try:
+                if day:
+                    day = int(day)
+                    if not 1 <= day <= 31:
+                        raise ValueError("Day must be between 1 and 31.")
+                    break
+                else:
+                    day = None
+                    break
+            except ValueError:
+                print("Invalid day entry. Please enter a valid day between 1 and 31 or leave blank.")
 
-            accidents_count = search_accidents_by_date(df, year=year, month=month, day=day)
-            print(f"There are {accidents_count} accidents matching your criteria.")
-        except ValueError as e:
-            print(e)
-    
+        accidents_count = search_accidents_by_date(df, year=year, month=month, day=day)
+        print(f"There are {accidents_count} accidents matching your criteria.")
+
+
     elif choice == '6':
-        try:
-            min_temp = input("Enter a Minimum Temperature (F) (leave blank for no minimum): ").strip()
-            max_temp = input("Enter a Maximum Temperature (F) (leave blank for no maximum): ").strip()
-            min_vis = input("Enter a Minimum Visibility (mi) (leave blank for no minimum): ").strip()
-            max_vis = input("Enter a Maximum Visibility (mi) (leave blank for no maximum): ").strip()
+        while True:
+            try:
+                min_temp = input("Enter a Minimum Temperature (F) (leave blank for no minimum): ").strip()
+                min_temp = float(min_temp) if min_temp else None
+                break
+            except ValueError:
+                print("Invalid entry for minimum temperature. Please enter a numeric value or leave blank.")
 
-            min_temp = float(min_temp) if min_temp else None
-            max_temp = float(max_temp) if max_temp else None
-            min_vis = float(min_vis) if min_vis else None
-            max_vis = float(max_vis) if max_vis else None
+        while True:
+            try:
+                max_temp = input("Enter a Maximum Temperature (F) (leave blank for no maximum): ").strip()
+                max_temp = float(max_temp) if max_temp else None
+                break
+            except ValueError:
+                print("Invalid entry for maximum temperature. Please enter a numeric value or leave blank.")
 
-            # CHECK FOR NEGATIVE
-            if (min_vis is not None and min_vis <= 0) or (max_vis is not None and max_vis <= 0):
-                raise ValueError("Visibility cannot be negative. Please enter a non-negative value.")
+        while True:
+            try:
+                min_vis = input("Enter a Minimum Visibility (mi) (leave blank for no minimum): ").strip()
+                min_vis = float(min_vis) if min_vis else None
+                if min_vis is not None and min_vis < 0:
+                    raise ValueError("Visibility cannot be negative.")
+                break
+            except ValueError:
+                print("Invalid entry for minimum visibility. Please enter a non-negative numeric value or leave blank.")
 
-            accidents_count = search_accidents_by_temp_vis(df, min_temp, max_temp, min_vis, max_vis)
-            print(f"There are {accidents_count} accidents matching your temperature and visibility criteria.")
-        except ValueError as e:
-            print(e)
-            print("Input a valid response.")
+        while True:
+            try:
+                max_vis = input("Enter a Maximum Visibility (mi) (leave blank for no maximum): ").strip()
+                max_vis = float(max_vis) if max_vis else None
+                if max_vis is not None and max_vis < 0:
+                    raise ValueError("Visibility cannot be negative.")
+                break
+            except ValueError:
+                print("Invalid entry for maximum visibility. Please enter a non-negative numeric value or leave blank.")
+
+        accidents_count = search_accidents_by_temp_vis(df, min_temp, max_temp, min_vis, max_vis)
+        print(f"There are {accidents_count} accidents matching your temperature and visibility criteria.")
 
 
 def valid_state(state):
@@ -488,7 +520,7 @@ def valid_city(city, df):
 def valid_zip(zip_code):
     return zip_code.isdigit() and len(zip_code) == 5
 
-# Search function with enhanced error handling
+# SEARCH (4) CAPACITY
 def search4(df):
     state = ""
     city = ""
