@@ -415,36 +415,61 @@ def search_accidents(df, choice):
         year = input("Enter a Year (leave blank to include all years): ").strip()
         month = input("Enter a Month name or number (leave blank to include all months): ").strip().lower()
         day = input("Enter a Day (leave blank to include all days): ").strip()
+        try:
+            # VALIDATE YEAR
+            if year:
+                year = int(year)
+                if year <= 0:
+                    raise ValueError("Input must be a positive integer.")
+            else:
+                year = None
 
-        if year.isdigit():
-            year = int(year)
-        else:
-            year = None  # ALLOW SEARCH ACROSS ALL YEARS
+            # VALIDATE MONTH
+            if month.isdigit():
+                month = int(month)
+                if not 1 <= month <= 12:
+                    raise ValueError("Month must be between 1 and 12.")
+            elif month in month_mapping:
+                month = month_mapping[month]
+            elif month:
+                raise ValueError("Invalid month entry. Please enter a valid month name or number.")
+            else:
+                month = None
 
-        if month.isdigit():
-            month = int(month)
-        elif month in month_mapping:
-            month = month_mapping[month]
-        else:
-            month = None  # ALLOW SEARCH ACROSS ALL MONTHS
+            # VALIDATE DAY
+            if day:
+                day = int(day)
+                if not 1 <= day <= 31:
+                    raise ValueError("Day must be between 1 and 31.")
+            else:
+                day = None
 
-        if day.isdigit():
-            day = int(day)
-        else:
-            day = None  # ALLOW SEARCH ACROSS ALL DAYS
-
-        accidents_count = search_accidents_by_date(df, year=year, month=month, day=day)
-        print(f"There are {accidents_count} accidents matching your criteria.")
-
-
+            accidents_count = search_accidents_by_date(df, year=year, month=month, day=day)
+            print(f"There are {accidents_count} accidents matching your criteria.")
+        except ValueError as e:
+            print(e)
+    
     elif choice == '6':
-        min_temp = input("Enter a Minimum Temperature (F) (leave blank for no minimum): ").strip()
-        max_temp = input("Enter a Maximum Temperature (F) (leave blank for no maximum): ").strip()
-        min_vis = input("Enter a Minimum Visibility (mi) (leave blank for no minimum): ").strip()
-        max_vis = input("Enter a Maximum Visibility (mi) (leave blank for no maximum): ").strip()
+        try:
+            min_temp = input("Enter a Minimum Temperature (F) (leave blank for no minimum): ").strip()
+            max_temp = input("Enter a Maximum Temperature (F) (leave blank for no maximum): ").strip()
+            min_vis = input("Enter a Minimum Visibility (mi) (leave blank for no minimum): ").strip()
+            max_vis = input("Enter a Maximum Visibility (mi) (leave blank for no maximum): ").strip()
 
-        accidents_count = search_accidents_by_temp_vis(df, min_temp, max_temp, min_vis, max_vis)
-        print(f"There are {accidents_count} accidents matching your temperature and visibility criteria.")
+            min_temp = float(min_temp) if min_temp else None
+            max_temp = float(max_temp) if max_temp else None
+            min_vis = float(min_vis) if min_vis else None
+            max_vis = float(max_vis) if max_vis else None
+
+            # CHECK FOR NEGATIVE
+            if (min_vis is not None and min_vis <= 0) or (max_vis is not None and max_vis <= 0):
+                raise ValueError("Visibility cannot be negative. Please enter a non-negative value.")
+
+            accidents_count = search_accidents_by_temp_vis(df, min_temp, max_temp, min_vis, max_vis)
+            print(f"There are {accidents_count} accidents matching your temperature and visibility criteria.")
+        except ValueError as e:
+            print(e)
+            print("Input a valid response.")
 
 
 
