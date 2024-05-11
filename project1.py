@@ -391,7 +391,11 @@ def ten(df):
 #       END print_answer FUNCTIONS       #
 #                                        #
 ##########################################
-
+valid_states = {"AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", 
+                "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", 
+                "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", 
+                "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", 
+                "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"}
 
 # SEARCH CAPACITY
 def search_accidents(df, choice):
@@ -472,35 +476,20 @@ def search_accidents(df, choice):
             print(e)
             print("Input a valid response.")
 
-def valid_zip(zipcode):
-    #check length 
-    if not len(zipcode) == 5: 
-        return False
-    
-    #check numbers
-    if not zipcode.isdigit():
-        return False
-
-    return True 
-
-def valid_city(city):
-    #check alpha
-    if not city.isalpha():
-        return False
-
-    return True
 
 def valid_state(state):
-    #check alpha and len 2
-    if not (state.isalpha() and len(state) == 2):
-        return False
+    return state in valid_states or state == ""
 
-    return True
+def valid_city(city, df):
+    # Assuming df['City'] contains all valid city names
+    normalized_cities = df['City'].dropna().unique()
+    return city.title() in normalized_cities
 
+def valid_zip(zip_code):
+    return zip_code.isdigit() and len(zip_code) == 5
 
-# SEARCH (4) CAPACITY
+# Search function with enhanced error handling
 def search4(df):
-
     state = ""
     city = ""
     zip_code = ""
@@ -511,31 +500,30 @@ def search4(df):
         if valid_state(state):
             break
         else:
-            print("ERROR STATE INVALID FORMAT. Please enter exactly 2 alphabetic characters. ")
+            print("ERROR: Invalid state. Please enter a valid 2-letter state abbreviation or leave blank.")
 
     while True:
-        city = input("Enter the city (leave blank to search all cities): ").title()
-        if valid_city(city):
+        city = input("Enter the city (leave blank to search all cities): ")
+        if city == "" or valid_city(city, df):
             break
         else:
-            print("ERROR  CITY INVALID FORMAT. Please enter only alphabetic characters. ")
+            print("ERROR: City not recognized. Please enter a valid city name or leave blank.")
 
     while True:
         zip_code = input("Enter the zipcode (leave blank to search all zipcodes): ")
-        if valid_zip(zip_code):
+        if zip_code == "" or valid_zip(zip_code):
             break
         else:
-            print("ERROR ZIPCODE INVALID FORMAT. Please enter exactly 5 digits.")
+            print("ERROR: Invalid zipcode. Please enter exactly 5 digits or leave blank.")
     
-    if state != "":
-       filtered_df = filtered_df[filtered_df["State"] == state]
-    if city != "":
-        filtered_df = filtered_df[filtered_df["City"] == city]
-    if zip_code != "":
+    if state:
+        filtered_df = filtered_df[filtered_df["State"] == state]
+    if city:
+        filtered_df = filtered_df[filtered_df["City"] == city.title()]
+    if zip_code:
         filtered_df = filtered_df[filtered_df["Zipcode"] == zip_code]
 
     results = len(filtered_df)
-    
     return results
     
 # menu 5 and 6
