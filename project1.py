@@ -12,19 +12,33 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 import time
-
-file_path = 'US_Accidents_data.csv'
-
-# What would happen I get a file that is corrupted?
-# What if 2 of the columns don't have the same number of rows?
-# What if the programs takes too much to long to process the data set?
-# What if you divide by zero?
-# What if there is an error in one of the formulas?
-
+import os
 
 # READ DATA INTO DF
-def load_data(file_path):
-    # START TIMING 
+def load_data():
+
+    csv_files = [file for file in os.listdir('.') if file.endswith('.csv')]
+    if not csv_files:
+        print("No CSV files found in the directory.")
+        return None, None
+    
+    print("\nAvailabe CSV files:")
+    for index, file in enumerate(csv_files):
+        print(f"{index + 1}. {file}")
+
+    try:
+        file_index = int(input("Select the file number to load: ")) - 1
+    except ValueError:
+        print("Invalid input. Please enter a number.")
+        return None, None
+    
+    if file_index >= 0 and file_index < len(csv_files):
+        file_path = csv_files[file_index]
+    else:
+        print("Invaled file selection.")
+        return None, None
+
+    #Start timing
     start_time = time.time()
 
     try:
@@ -58,41 +72,40 @@ def load_data(file_path):
 
 #//IMPLEMENTED BY JUSTIN
 #Clean_data function executes when the user enters 2 for the menu options.
-#However, this will not execute if the data has not been loaded yet. 
 def clean_data(df):
-
     start_time = time.time()
-
     print("\nProcessing input data set:")
     print("************************")
     print(f"{datetime.now()} Performing Data Clean Up")
 
-    # only consider the first 5 digits of the zip code
-    df['Zipcode'] = df['Zipcode'].astype(str).str.split('-').str[0]
+    try:
+        df['Zipcode'] = df['Zipcode'].astype(str).str.split('-').str[0]
+        
+        df['Start_Time'] = pd.to_datetime(df['Start_Time'])
+        df['End_Time'] = pd.to_datetime(df['End_Time'])
+        duration = (df['End_Time'] - df['Start_Time']).dt.total_seconds() / 60
+        df = df[duration != 0]
 
-    #convert Start_time and End_time to datetime
-    #calculate the durations and filter our rows where duration is zero
-    df['Start_Time'] = pd.to_datetime(df['Start_Time'])
-    df['End_Time'] = pd.to_datetime(df['End_Time'])
-    duration = (df['End_Time'] - df['Start_Time']).dt.total_seconds() / 60
-    df = df[duration != 0]
+        columns_to_check = ['ID', 'Severity', 'Zipcode', 'Start_Time', 'End_Time', 'Visibility(mi)', 'Weather_Condition', 'Country']
+        df_cleaned = df.dropna(subset=columns_to_check)
 
-    # Drop the rows where data is missing from any one of these column names
-    columns_to_check = ['ID', 'Severity', 'Zipcode', 'Start_Time', 'End_Time', 'Visibility(mi)', 'Weather_Condition', 'Country']
-    df_cleaned = df.dropna(subset=columns_to_check)
+        min_non_na = len(df.columns) - 2
+        df_cleaned = df_cleaned.dropna(thresh=min_non_na)
 
-    # Drop the rows where data is missing from more than 3 columns
-    min_non_na = len(df.columns) - 2;
-    df_cleaned = df_cleaned.dropna(thresh=min_non_na)
+        df_cleaned = df_cleaned[df_cleaned['Distance(mi)'] != 0]
 
-    #Eliminate all rows with distance equal to zero
-    df_cleaned = df_cleaned[df_cleaned['Distance(mi)'] != 0]
+        print(f"{datetime.now()} Total Rows Read after cleaning is: {len(df_cleaned)}")
 
-    print(f"{datetime.now()} Total Rows Read after cleaning is: {len(df_cleaned)}")
-
-    clean_time = time.time() - start_time
-    print(f"Time to process is: {clean_time:.2f} seconds")
-    return df_cleaned, clean_time
+        clean_time = time.time() - start_time
+        print(f"Time to process is: {clean_time:.2f} seconds")
+        return df_cleaned, clean_time
+    
+    except KeyError as e:
+        print(f"Dataframe does not have the specified columns: {e}. Please try again.")
+        return None, 0
+    except Exception as e:
+        print(f"An unexpected error occurured: {e}")
+        return None, 0
 
 
 # ANSWERING QUESTIONS
@@ -185,10 +198,10 @@ def print_answers(df):
     # SPACER
     print("\n" + "-"*50 + "\n")
 
-    print(f"{datetime.now()} What was the maximum visibility of all accidents of severity 2 that occurred in the state of New Hampshire?")
+    print(f"{datetime.now()} 9. How many accidents of each severity were recorded in Bakersfield?")
     try:
-        max_vis_nh = max_visibility_severity_2_nh(df)
-        print(f"{datetime.now()} Maximum visibility: {max_vis_nh} miles")
+        result = bk(df)
+        print(result)
     except Exception as e:
         print(f"Failed to calculate due to: {str(e)}")
 
@@ -212,102 +225,100 @@ def print_answers(df):
 ##########################################
 
 # QUESTION 1 // IMPLEMENTED BY JUSTIN
+# What are the 3 months with the highest amount of accidents reported?
 def top_three_accident_months(df):
 
-    #Convert Start_Time to datetime
     df['Start_Time'] = pd.to_datetime(df['Start_Time'])
 
-    #Extract year and month from Start_Time
     df['Year_Month'] = df['Start_Time'].dt.to_period('M')
 
-    #Group by the new Year_Month column and count the number of accidents
     monthly_accidents = df.groupby('Year_Month').size()
 
-    #Sort the counts in descending 
     top_months = monthly_accidents.sort_values(ascending=False).head(3)
 
     return top_months
 
 # QUESTION 2 //IMPLEMENTED BY JUSTIN
+# What is the year with the highest amount of accidents reported?
 def year_with_most_accidents(df):
 
-    #Convert Start_Time to datetime
     df['Start_Time'] = pd.to_datetime(df['Start_Time'])
 
-    #Extract the year from 'Start_Time'
     df['Year'] = df['Start_Time'].dt.year
 
-    #Group by the 'Year' column, find yr with most accidnets
     accident_counts = df['Year'].value_counts()
     max_accidents_year = accident_counts.idxmax()
 
-    #return the number of accidents in that year
     max_accidents_count = accident_counts.max()
 
     return max_accidents_year, max_accidents_count
 
 #QUESTION 3 // IMPLEMENTED BY JUSTIN
+#What is the state that had the most accidents of Severity 2?
 def state_with_most_severity_2_accidents(df):
 
-    # Properly format 'Start_Time' 'Severity'
     df['Start_Time'] = pd.to_datetime(df['Start_Time'])
     df['Year'] = df['Start_Time'].dt.year
 
-    # Filter the DataFrame for only accidents with Severity 2
     severity_2_df = df[df['Severity'] == 2]
 
-    # Group the data by State and Year
-    grouped = severity_2_df.groupby(['State', 'Year']).size()
+    grouped = severity_2_df.groupby('State').size()
 
-    # Reset the index to make 'State' and 'Year' columns again
     grouped = grouped.reset_index(name='Count')
 
-    # Sort and find the state with the maximum accidents for each year
-    # First sort by Year and then by Count in descending order to get the state with most accidents on top for each year
-    grouped = grouped.sort_values(by=['Year', 'Count'], ascending=[True, False])
-
-    # Drop duplicate years
-    result = grouped.drop_duplicates(subset='Year', keep='first').sort_values(by='Year')
-
+    result = grouped.sort_values(by='Count', ascending=False).head(1)
     return result
 
 # QUESTION 4 // IMPLEMENTED BY JUSTIN
+# What Severity is the most common in Virginia, California, and Florida?
 def most_common_severity_in_states(df):
 
     states_of_interest = ['VA', 'CA', 'FL']
 
-    # Filter DataFrame for Virginia, California, and Florida
     filtered_df = df[df['State'].isin(states_of_interest)]
 
-    # Group by State and Severity, then count the occurrences
     grouped = filtered_df.groupby(['State', 'Severity']).size()
 
     grouped_df = grouped.reset_index(name='Count')
 
-    # Sort the DataFrame by State and Count in descending order to find the most common severity for each state
     grouped_df = grouped_df.sort_values(by=['State', 'Count'], ascending=[True, False])
 
-    # Drop duplicates
     most_common_severity = grouped_df.drop_duplicates(subset='State', keep='first').reset_index(drop=True)
 
     return most_common_severity
 
 #QUESTION 5 // karla
+# What are the 5 cities that had the most accidents in California?
 def top_five_cities_in_california(df):
+    # FILTERING
     ca_accidents = df[df['State'] == 'CA'].copy()
+
+    # EXTRACT YEAR AND GROUP BY YEAR AND CITY
     ca_accidents['Year'] = pd.to_datetime(ca_accidents['Start_Time']).dt.year
     grouped = ca_accidents.groupby(['Year', 'City']).size().reset_index(name='Count')
-    top_cities_by_year = grouped.sort_values(['Year', 'Count'], ascending=[True, False])
-    top_cities_by_year = top_cities_by_year.groupby('Year').head(5)
-    return top_cities_by_year.pivot(index='Year', columns='City', values='Count')
+
+    # GET TOP CITIES OVERALL
+    overall_top_cities = grouped.groupby('City')['Count'].sum().nlargest(5).index
+
+    # FILTER TO KEEP TOP 5
+    top_cities_by_year = grouped[grouped['City'].isin(overall_top_cities)]
+
+    # FOR BETTER VISIBILITY
+    result = top_cities_by_year.pivot(index='Year', columns='City', values='Count').fillna(0)
+    result.columns.name = "Top 5 Cities"
+
+    return result
 
 # Question 6 //karla
+# What is the average humidity and average temperature of all accidents of 
+# severity 4 that occurred in the city of Boston?
 def avg_humidity_temperature_boston(df):
     boston_accidents = df[(df['Severity'] == 4) & (df['City'] == 'Boston')].copy()
     boston_accidents['Month'] = pd.to_datetime(boston_accidents['Start_Time']).dt.month
     return boston_accidents.groupby('Month').agg({'Humidity(%)': 'mean', 'Temperature(F)': 'mean'}).reset_index()
 
 # QUESTION 7
+# What are the 3 most common weather conditions when accidents occur in New York City?
 def common_weather_conditions_ny(df):
     # FILTER FOR NY
     nyc_accidents = df[df['City'] == 'New York'].copy()
@@ -319,16 +330,15 @@ def common_weather_conditions_ny(df):
     # GROUP BY MONTH AND WEATHER CONDITION
     grouped = nyc_accidents.groupby(['Month', 'Weather_Condition']).size().reset_index(name='Count')
 
-    # SORT
+    # SORT AND GET TOP 3 CONDITIONS FOR EACH MONTH
     top_conditions_by_month = grouped.sort_values(['Month', 'Count'], ascending=[True, False])
-
-    # GET TOP 3 CONDITIONS
     top_conditions_by_month = top_conditions_by_month.groupby('Month').head(3)
 
-    # RETURN IN READABLE FORMAT
-    return top_conditions_by_month.pivot(index='Month', columns='Weather_Condition', values='Count')
+    # READABILITY
+    return top_conditions_by_month.pivot(index='Month', columns='Weather_Condition', values='Count').fillna(0)
 
 # QUESTION 8
+# What was the max visibility of all accidents of severity 2 that occurred in the state of New Hampshire?
 def max_visibility_severity_2_nh(df):
     # FILTER FOR NH + VIS 2
     nh_severity_2 = df[(df['State'] == 'NH') & (df['Severity'] == 2)].copy()
@@ -343,6 +353,7 @@ def max_visibility_severity_2_nh(df):
     return max_visibility
     
 # Question 9
+# How many accidents of each severity were recorded in Bakersfield?
 def bk(df):
 
     df['Start_Time'] = pd.to_datetime(df['Start_Time'])
@@ -359,7 +370,9 @@ def bk(df):
 
     return result
   
-# Question 10 
+# Question 10
+# What was the longest accident(in hours) recorded in Las Vegas in the Spring 
+# (March, April, and May)?
 def ten(df): 
 
     df['Start_Time'] = pd.to_datetime(df['Start_Time']) 
@@ -382,6 +395,12 @@ def ten(df):
 
 # SEARCH CAPACITY
 def search_accidents(df, choice):
+    month_mapping = {
+        'january': 1, 'february': 2, 'march': 3, 'april': 4,
+        'may': 5, 'june': 6, 'july': 7, 'august': 8,
+        'september': 9, 'october': 10, 'november': 11, 'december': 12
+    }
+
     if choice == '4':
         start_time = time.time()
         accident_count = search4(df)
@@ -394,50 +413,118 @@ def search_accidents(df, choice):
         print("Time to perform search is: ", end_time - start_time)
 
     elif choice == '5':
-        year = input("Enter a Year: ")
-        month = input("Enter a Month name: ")
-        day = input("Enter a Day: ")
-        # [PH]
+        year = input("Enter a Year (leave blank to include all years): ").strip()
+        month = input("Enter a Month number (leave blank to include all months): ").strip().lower()
+        day = input("Enter a Day (leave blank to include all days): ").strip()
+
+        if year.isdigit():
+            year = int(year)
+        else:
+            year = None  # ALLOW SEARCH ACROSS ALL YEARS
+
+        if month.isdigit():
+            month = int(month)
+        elif month in month_mapping:
+            month = month_mapping[month]
+        else:
+            month = None  # ALLOW SEARCH ACROSS ALL MONTHS
+
+        if day.isdigit():
+            day = int(day)
+        else:
+            day = None  # ALLOW SEARCH ACROSS ALL DAYS
+
+        accidents_count = search_accidents_by_date(df, year=year, month=month, day=day)
+        print(f"There are {accidents_count} accidents matching your criteria.")
+
 
     elif choice == '6':
-        min_temp = input("Enter a Minimum Temperature (F): ")
-        max_temp = input("Enter a Maximum Temperature (F): ")
-        min_vis = input("Enter a Minimum Visibility (mi): ")
-        max_vis = input("Enter a Maximum Visibility (mi): ")
-        # [PH]
+        min_temp = input("Enter a Minimum Temperature (F) (leave blank for no minimum): ").strip()
+        max_temp = input("Enter a Maximum Temperature (F) (leave blank for no maximum): ").strip()
+        min_vis = input("Enter a Minimum Visibility (mi) (leave blank for no minimum): ").strip()
+        max_vis = input("Enter a Maximum Visibility (mi) (leave blank for no maximum): ").strip()
+
+        accidents_count = search_accidents_by_temp_vis(df, min_temp, max_temp, min_vis, max_vis)
+        print(f"There are {accidents_count} accidents matching your temperature and visibility criteria.")
+
+def valid_zip(zipcode):
+    #check length 
+    if not len(zipcode) == 5: 
+        return False
+    
+    #check numbers
+    if not zipcode.isdigit():
+        return False
+
+    return True 
+
+def valid_city(city):
+    #check alpha
+    if not city.isalpha():
+        return False
+
+    return True
+
+def valid_state(state):
+    #check alpha and len 2
+    if not (state.isalpha() and len(state) == 2):
+        return False
+
+    return True
 
 # SEARCH (4) CAPACITY
 def search4(df):
 
-    state = input("Enter the state (leave blank to search all states): ").upper()
-    city = input("Enter the city (leave blank to search all cities): ").title()
-    zip_code = input("Enter the zipcode (leave blank to search all zipcodes): ")
-
+    state = ""
+    city = ""
+    zip_code = ""
     filtered_df = df
+
+    while True:
+        state = input("Enter the state (leave blank to search all states): ").upper()
+        if valid_state(state):
+            break
+        else:
+            print("ERROR STATE INVALID FORMAT. Please enter exactly 2 alphabetic characters. ")
+
+    while True:
+        city = input("Enter the city (leave blank to search all cities): ").title()
+        if valid_city(city):
+            break
+        else:
+            print("ERROR  CITY INVALID FORMAT. Please enter only alphabetic characters. ")
+
+    while True:
+        zip_code = input("Enter the zipcode (leave blank to search all zipcodes): ")
+        if valid_zip(zip_code):
+            break
+        else:
+            print("ERROR ZIPCODE INVALID FORMAT. Please enter exactly 5 digits.")
+    
     if state != "":
-        filtered_df = filtered_df[filtered_df["State"] == state]
+       filtered_df = filtered_df[filtered_df["State"] == state]
     if city != "":
-        filterd_df = filtered_df[filtered_df["City"] == city]
+        filtered_df = filtered_df[filtered_df["City"] == city]
     if zip_code != "":
         filtered_df = filtered_df[filtered_df["Zipcode"] == zip_code]
-    
+
     results = len(filtered_df)
     
     return results
     
 # menu 5 and 6
-def search_accidents_by_date(year='', month='', day=''):
-    filtered_data = accidents_data
-    if year:
-        filtered_data = filtered_data[filtered_data['Start_Time'].dt.year == int(year)]
-    if month:
-        filtered_data = filtered_data[filtered_data['Start_Time'].dt.month == int(month)]
-    if day:
-        filtered_data = filtered_data[filtered_data['Start_Time'].dt.day == int(day)]
+def search_accidents_by_date(df, year=None, month=None, day=None):
+    filtered_data = df
+    if year is not None:
+        filtered_data = filtered_data[filtered_data['Start_Time'].dt.year == year]
+    if month is not None:
+        filtered_data = filtered_data[filtered_data['Start_Time'].dt.month == month]
+    if day is not None:
+        filtered_data = filtered_data[filtered_data['Start_Time'].dt.day == day]
     return len(filtered_data)
 
-def search_accidents_by_temp_vis(min_temp='', max_temp='', min_vis='', max_vis=''):
-    filtered_data = accidents_data
+def search_accidents_by_temp_vis(df, min_temp='', max_temp='', min_vis='', max_vis=''):
+    filtered_data = df
     if min_temp:
         filtered_data = filtered_data[filtered_data['Temperature(F)'] >= float(min_temp)]
     if max_temp:
@@ -473,7 +560,7 @@ def main():
                 print("Invalid option. Please select a valid number from 1 to 7.")
 
         if choice == '1':
-            df, load_time = load_data(file_path)
+            df, load_time = load_data()
             if df is not None:  
                 total_time += load_time
         elif choice in ['2', '3', '4', '5', '6']:
