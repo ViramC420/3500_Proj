@@ -400,6 +400,7 @@ def search_accidents(df, choice):
         'may': 5, 'june': 6, 'july': 7, 'august': 8,
         'september': 9, 'october': 10, 'november': 11, 'december': 12
     }
+
     if choice == '4':
         start_time = time.time()
         accident_count = search4(df)
@@ -471,23 +472,68 @@ def search_accidents(df, choice):
             print(e)
             print("Input a valid response.")
 
+def valid_zip(zipcode):
+    #check length 
+    if not len(zipcode) == 5: 
+        return False
+    
+    #check numbers
+    if not zipcode.isdigit():
+        return False
+
+    return True 
+
+def valid_city(city):
+    #check alpha
+    if not city.isalpha():
+        return False
+
+    return True
+
+def valid_state(state):
+    #check alpha and len 2
+    if not (state.isalpha() and len(state) == 2):
+        return False
+
+    return True
 
 
 # SEARCH (4) CAPACITY
 def search4(df):
 
-    state = input("Enter the state (leave blank to search all states): ").upper()
-    city = input("Enter the city (leave blank to search all cities): ").title()
-    zip_code = input("Enter the zipcode (leave blank to search all zipcodes): ")
-
+    state = ""
+    city = ""
+    zip_code = ""
     filtered_df = df
+
+    while True:
+        state = input("Enter the state (leave blank to search all states): ").upper()
+        if valid_state(state):
+            break
+        else:
+            print("ERROR STATE INVALID FORMAT. Please enter exactly 2 alphabetic characters. ")
+
+    while True:
+        city = input("Enter the city (leave blank to search all cities): ").title()
+        if valid_city(city):
+            break
+        else:
+            print("ERROR  CITY INVALID FORMAT. Please enter only alphabetic characters. ")
+
+    while True:
+        zip_code = input("Enter the zipcode (leave blank to search all zipcodes): ")
+        if valid_zip(zip_code):
+            break
+        else:
+            print("ERROR ZIPCODE INVALID FORMAT. Please enter exactly 5 digits.")
+    
     if state != "":
-        filtered_df = filtered_df[filtered_df["State"] == state]
+       filtered_df = filtered_df[filtered_df["State"] == state]
     if city != "":
-        filterd_df = filtered_df[filtered_df["City"] == city]
+        filtered_df = filtered_df[filtered_df["City"] == city]
     if zip_code != "":
         filtered_df = filtered_df[filtered_df["Zipcode"] == zip_code]
-    
+
     results = len(filtered_df)
     
     return results
